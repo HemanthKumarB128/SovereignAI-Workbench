@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pypdf import PdfReader
 import requests
 
 app = FastAPI()
@@ -34,3 +35,23 @@ def chat(req: ChatRequest):
     result = response.json()
 
     return {"response": result["response"]}
+
+@app.post("/upload")
+async def upload_pdf(file: UploadFile = File(...)):
+    file_path = f"uploads/{file.filename}"
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    reader = PdfReader(file_path)
+
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() + "\n"
+
+    return {
+        "message": "PDF uploaded and read successfully",
+        "filename": file.filename,
+        "characters": len(text),
+        "preview": text[:500]
+    }
