@@ -1,6 +1,5 @@
-venv/
-backend/venv/
-node_modules/
 __pycache__/
 *.pyc
-.env
+venv/
+backend/uploads/extracted_text.txt
+backend/vectorstore/

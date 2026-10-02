@@ -10,14 +10,13 @@ function App() {
   const sendMessage = async () => {
     if (!message.trim()) return;
 
-    setLoading(true);
-
     const userMessage = {
       role: "user",
       text: message,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
 
     try {
       const res = await axios.post("http://localhost:8000/chat", {
@@ -79,6 +78,20 @@ function App() {
             </div>
           </div>
         ))}
+
+        {loading && (
+          <div className="msg bot">
+            <div className="who">AI</div>
+
+            <div className="bubble loading-bubble">
+              <div className="typing">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="composer">
@@ -90,12 +103,12 @@ function App() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-            }
-          }}
-          placeholder="Message the Workbench..."
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            placeholder="Message the Workbench..."
           />
 
           <button
@@ -103,7 +116,7 @@ function App() {
             onClick={sendMessage}
             disabled={loading}
           >
-            {loading ? "..." : "↑"}
+            {loading ? <div className="loader"></div> : "↑"}
           </button>
         </div>
 
