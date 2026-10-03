@@ -48,7 +48,7 @@ def chat(req: ChatRequest):
         # Load FAISS index
         index = faiss.read_index("vectorstore/faiss.index")
 
-        # Load document chunks
+        # Load chunks
         with open("vectorstore/chunks.pkl", "rb") as f:
             chunks = pickle.load(f)
 
@@ -63,8 +63,15 @@ def chat(req: ChatRequest):
 
         best_distance = float(D[0][0])
 
+        print("\n==============================")
+        print("Question:", req.message)
+        print("Best Distance:", best_distance)
+        print("Top Chunk:")
+        print(chunks[I[0][0]][:300])
+        print("==============================\n")
+
         # If document is relevant -> Use RAG
-        if best_distance < 1.0:
+        if best_distance < 2.0:
 
             context = ""
 
@@ -74,7 +81,10 @@ def chat(req: ChatRequest):
             prompt = f"""
 You are a document assistant.
 
-Answer using ONLY the document context below.
+Answer ONLY using the document context below.
+
+If the answer is not in the document, reply:
+Information not found in the document.
 
 Context:
 {context}
@@ -100,8 +110,8 @@ Answer:
                 "response": result["response"]
             }
 
-    except Exception:
-        pass
+    except Exception as e:
+        print("\nRAG ERROR:", e, "\n")
 
     # General AI Chat
     response = requests.post(
@@ -128,7 +138,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
 
-    # Extract text from PDF
+    # Extract text
     reader = PdfReader(file_path)
 
     text = ""
